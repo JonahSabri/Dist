@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 interface User {
   id: number;
   email: string;
-  user_type: 'artist' | 'listener';
+  user_type: 'artist' | 'listener' | 'admin';
   display_name?: string;
 }
 
@@ -21,6 +21,7 @@ interface AuthActions {
   setTokens: (access: string, refresh: string) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
+  clearTokens: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -48,12 +49,23 @@ export const useAuthStore = create<AuthStore>()(
           refreshToken: refresh,
         }),
 
-      logout: () =>
+      logout: () => {
+        // Clear localStorage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        
         set({
           user: null,
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
+        });
+      },
+
+      clearTokens: () =>
+        set({
+          accessToken: null,
+          refreshToken: null,
         }),
 
       setLoading: (loading) =>
